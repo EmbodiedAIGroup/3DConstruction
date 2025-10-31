@@ -2,7 +2,8 @@ class Config:
     # 探索参数
     MAX_EXPLORATION_STEPS = 500
     TARGET_COVERAGE = 0.8
-    SAVE_INTERVAL = 50
+    # TODO: debug 先每步保存一次地图
+    SAVE_INTERVAL = 1
     SAVE_IMAGES = True  # 启用Realsense图像保存
     
     # 机器狗参数
