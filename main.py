@@ -89,7 +89,7 @@ def main():
 
             # 6. 执行动作
             dog.set_action(
-                action=action,
+                action=action.value,
                 velocity=Config.MOVE_VELOCITY,
                 duration=Config.MOVE_DURATION
             )
