@@ -72,7 +72,3 @@ class Scene:
         # 3. 计算已探索体素占比（限制最大1.0）
         covered_ratio = min(1.0, len(self.explored_voxels) / total_voxels)
         return covered_ratio
-
-    # def save_map(self, path):
-    #     """保存点云地图"""
-    #     o3d.io.write_point_cloud(path, self.voxel_down_pcd)
