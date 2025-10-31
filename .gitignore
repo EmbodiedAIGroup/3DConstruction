@@ -1,0 +1,5 @@
+saved_images/
+__pycache__/
+.idea
+*.pcd
+temp.py
