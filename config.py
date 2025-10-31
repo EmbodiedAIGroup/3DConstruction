@@ -13,6 +13,9 @@ class Config:
     
     # 地图参数
     MAP_RESOLUTION = 0.1  # 点云下采样分辨率(m)
+
+    # 新增参数
+    OBSTACLE_CHECK_DISTANCE = 0.5  # 障碍物检测距离（米）
     
     # 相机外参（相机→机器人基座坐标转换）
     # [x, y, z]偏移：相机在机器人前方0.2m，高度0.5m

@@ -60,14 +60,27 @@ def main():
             
             # 转换规划器输出为宇树动作指令（1-前进,2-左转,3-右转）
             vx, vy, yaw = planner.plan_next_move(robot_pose, coverage)
-            if yaw > 0.1:
-                action = 2  # 左转
-            elif yaw < -0.1:
-                action = 3  # 右转
-            elif vx > 0.1:
-                action = 1  # 前进
+
+            # 获取规划器中的障碍物信息（需在NBPPlanner中实现碰撞检测接口）
+            is_forward_obstacle = planner.check_obstacle_ahead(robot_pose, distance=Config.OBSTACLE_CHECK_DISTANCE)
+            is_left_obstacle = planner.check_obstacle_left(robot_pose, distance=Config.OBSTACLE_CHECK_DISTANCE)
+            is_right_obstacle = planner.check_obstacle_right(robot_pose, distance=Config.OBSTACLE_CHECK_DISTANCE)
+
+            # 优先选择无障碍物的方向
+            if not is_forward_obstacle and vx > 0.1:
+                action = 1  # 前进（无障碍物且有前进指令）
+            elif not is_left_obstacle and yaw > 0.1:
+                action = 2  # 左转（无左侧障碍物且有左转指令）
+            elif not is_right_obstacle and yaw < -0.1:
+                action = 3  # 右转（无右侧障碍物且有右转指令）
             else:
-                action = 0  # 停止
+                # 所有规划方向有障碍物时，优先尝试转向避开
+                if not is_left_obstacle:
+                    action = 2  # 左转避开
+                elif not is_right_obstacle:
+                    action = 3  # 右转避开
+                else:
+                    action = 0  # 无法移动，停止
             
             # 6. 执行动作
             dog.set_action(
@@ -81,8 +94,6 @@ def main():
             # 状态输出与地图保存
             step += 1
             print(f"Step: {step}, 覆盖度: {coverage:.2f}, 动作: {action}")
-            if step % 10 == 0:
-                print(f"Step: {step}, 覆盖度: {coverage:.2f}, 动作: {action}")
             if step % Config.SAVE_INTERVAL == 0:
                 scene.save_map(f"save_results/map_step_{step}.pcd")
             
