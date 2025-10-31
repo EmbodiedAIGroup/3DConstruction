@@ -7,7 +7,7 @@ class Config:
     SAVE_IMAGES = True  # 启用Realsense图像保存
     
     # 机器狗参数
-    ROBOT_RADIUS = 0.35  # Go2机身半径
+    ROBOT_RADIUS = 1  # Go2机身半径
     MOVE_VELOCITY = 0.3  # 前进速度(m/s)
     MOVE_DURATION = 1  # 每次动作持续时间(s)
     

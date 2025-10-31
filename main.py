@@ -15,7 +15,7 @@ def main():
     scene = Scene(voxel_size=Config.MAP_RESOLUTION)
     planner = NBPPlanner(
         robot_radius=Config.ROBOT_RADIUS,
-        map_resolution=Config.MAP_RESOLUTION
+        # map_resolution=Config.MAP_RESOLUTION
     )
     
     try:
