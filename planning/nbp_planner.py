@@ -2,6 +2,7 @@ import numpy as np
 import heapq
 import open3d as o3d  # 引入 open3d
 
+
 class NBPPlanner:
     def __init__(self, robot_radius=0.3):
         """
@@ -11,9 +12,9 @@ class NBPPlanner:
         self.robot_radius = robot_radius
         # self.map_resolution = map_resolution # 不再需要栅格地图分辨率
         # self.collision_map = None # 不再使用栅格地图
-        
+
         # 用于碰撞检测的KDTree
-        self.kdtree = None 
+        self.kdtree = None
         # 存储从3D点云中提取的2D障碍物点（z=0），用于构建KDTree
         self.obstacle_pcd_2d = o3d.geometry.PointCloud()
         # 安全距离的平方，用于高效比较
@@ -26,7 +27,7 @@ class NBPPlanner:
         :param robot_pose: (可选) 此参数保留以兼容旧接口，但在此实现中不再需要
         """
         points_3d = np.asarray(voxel_down_pcd.points)
-        
+
         if len(points_3d) == 0:
             # 没有任何点云数据
             self.kdtree = None
@@ -60,19 +61,19 @@ class NBPPlanner:
         """规划下一步移动指令"""
         if self.kdtree is None:
             # 如果没有障碍物地图，默认前进
-            return (0.2, 0, 0) 
-        
-        # 简化版NBP逻辑：优先向覆盖度低的方向移动
+            return (0.2, 0, 0)
+
+            # 简化版NBP逻辑：优先向覆盖度低的方向移动
         # 实际应用中可替换为原仓库的价值地图计算
         directions = [
-            (0.2, 0, 0),    # 前进
-            (0, 0.1, 0),    # 右移
-            (0, -0.1, 0),   # 左移
-            (0, 0, 0.3),    # 右转 (假设转向不会立即碰撞)
-            (0, 0, -0.3),   # 左转 (假设转向不会立即碰撞)
-            (-0.2, 0, 0),   # 后退
+            (0.2, 0, 0),  # 前进
+            (0, 0.1, 0),  # 右移
+            (0, -0.1, 0),  # 左移
+            (0, 0, 0.3),  # 右转 (假设转向不会立即碰撞)
+            (0, 0, -0.3),  # 左转 (假设转向不会立即碰撞)
+            (-0.2, 0, 0),  # 后退
         ]
-        
+
         # 选择第一个无碰撞的方向
         for vx, vy, yaw in directions:
             # 检查线速度移动是否会导致碰撞
@@ -82,7 +83,7 @@ class NBPPlanner:
             else:
                 # 如果只是转向，我们假设它是安全的
                 return (vx, vy, yaw)
-        
+
         return (0, 0, 0.3)  # 无路可走时(被包围)，强制转向
 
     def _is_point_in_obstacle(self, x, y):
@@ -94,14 +95,14 @@ class NBPPlanner:
 
         # 1. 创建查询点 (z=0，因为KDTree是2D的)
         query_point = [x, y, 0]
-        
+
         # 2. 搜索最近的1个邻居
         #    [k, idx, dist_sq] = kdtree.search_knn_vector_3d(query_point, 1)
         #    k: 找到的邻居数 (0 或 1)
         #    idx: 邻居的索引
         #    dist_sq: 到邻居距离的 *平方*
         [k, idx, dist_sq] = self.kdtree.search_knn_vector_3d(query_point, 1)
-        
+
         if k == 0:
             return False  # KDTree不为空，但没找到点（理论上不应发生，除非KDTree为空）
 
@@ -118,24 +119,24 @@ class NBPPlanner:
         # 更鲁棒的检查会检查从当前点到目标点的路径
         x = current_pose["position"][0] + vx
         y = current_pose["position"][1] + vy
-        
+
         # 检查目标点是否离障碍物太近
         return self._is_point_in_obstacle(x, y)
-    
+
     def check_obstacle_ahead(self, robot_pose, distance=0.5):
         """
         检测机器人前方指定距离内是否有障碍物
         """
         if self.kdtree is None:
             return False  # 无碰撞地图时视为无障碍物
-        
+
         current_x, current_y = robot_pose["position"][0], robot_pose["position"][1]
         # 假设 yaw 存储在 "orientation" 的 z 分量 (欧拉角)
-        yaw = robot_pose["orientation"][2]  
-        
+        yaw = robot_pose["orientation"][2]
+
         target_x = current_x + distance * np.cos(yaw)
         target_y = current_y + distance * np.sin(yaw)
-        
+
         # 检查目标点
         return self._is_point_in_obstacle(target_x, target_y)
 
@@ -143,28 +144,28 @@ class NBPPlanner:
         """检测机器人左侧指定距离内是否有障碍物"""
         if self.kdtree is None:
             return False
-        
+
         current_x, current_y = robot_pose["position"][0], robot_pose["position"][1]
         yaw = robot_pose["orientation"][2]
-        
+
         # 左侧方向为航向角+90度（π/2弧度）
         left_angle = yaw + np.pi / 2
         target_x = current_x + distance * np.cos(left_angle)
         target_y = current_y + distance * np.sin(left_angle)
-        
+
         return self._is_point_in_obstacle(target_x, target_y)
 
     def check_obstacle_right(self, robot_pose, distance=0.5):
         """检测机器人右侧指定距离内是否有障碍物"""
         if self.kdtree is None:
             return False
-        
+
         current_x, current_y = robot_pose["position"][0], robot_pose["position"][1]
         yaw = robot_pose["orientation"][2]
-        
+
         # 右侧方向为航向角-90度（π/2弧度）
         right_angle = yaw - np.pi / 2
         target_x = current_x + distance * np.cos(right_angle)
         target_y = current_y + distance * np.sin(right_angle)
-        
+
         return self._is_point_in_obstacle(target_x, target_y)

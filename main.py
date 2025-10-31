@@ -89,7 +89,8 @@ def main():
                 duration=Config.MOVE_DURATION
             )
 
-            input('Press Enter to continue...')
+            # input('Press Enter to continue...')
+            time.sleep(1)
             
             # 状态输出与地图保存
             step += 1
