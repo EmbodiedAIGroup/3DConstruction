@@ -84,7 +84,7 @@ def main():
             if step % 10 == 0:
                 print(f"Step: {step}, 覆盖度: {coverage:.2f}, 动作: {action}")
             if step % Config.SAVE_INTERVAL == 0:
-                scene.save_map(f"map_step_{step}.pcd")
+                scene.save_map(f"save_results/map_step_{step}.pcd")
             
             # 覆盖度达标退出
             if coverage >= Config.TARGET_COVERAGE:
@@ -94,7 +94,7 @@ def main():
             time.sleep(0.1)
         
         # 保存最终地图
-        scene.save_map("final_map.pcd")
+        scene.save_map("save_results/final_map.pcd")
         print("探索完成，地图已保存")
     
     except KeyboardInterrupt:

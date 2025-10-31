@@ -72,3 +72,15 @@ class Scene:
         # 3. 计算已探索体素占比（限制最大1.0）
         covered_ratio = min(1.0, len(self.explored_voxels) / total_voxels)
         return covered_ratio
+
+    def save_map(self, path):
+        """保存下采样后的点云地图到指定路径"""
+        if not self.voxel_down_pcd.is_empty():
+            # 尝试写入点云文件，支持.pcd等open3d支持的格式
+            success = o3d.io.write_point_cloud(path, self.voxel_down_pcd)
+            if success:
+                print(f"点云地图已成功保存到: {path}")
+            else:
+                print(f"保存点云地图失败，请检查路径是否有效: {path}")
+        else:
+            print("无法保存空点云地图，请先添加点云数据")
