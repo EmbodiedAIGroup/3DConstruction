@@ -6,6 +6,7 @@ from hardware.realsense import RealsenseCamera
 from mapping.scene import Scene
 from planning.nbp_planner import NBPPlanner
 from config import Config
+from action import RobotAction
 
 def main():
     # 初始化硬件（使用宇树Go2的网络接口）
@@ -68,20 +69,24 @@ def main():
 
             # 优先选择无障碍物的方向
             if not is_forward_obstacle and vx > 0.1:
-                action = 1  # 前进（无障碍物且有前进指令）
+                action = RobotAction.MOVE_FORWARD  # 前进（无障碍物且有前进指令）
             elif not is_left_obstacle and yaw > 0.1:
-                action = 2  # 左转（无左侧障碍物且有左转指令）
+                action = RobotAction.MOVE_LEFT  # 左转（无左侧障碍物且有左转指令）
             elif not is_right_obstacle and yaw < -0.1:
-                action = 3  # 右转（无右侧障碍物且有右转指令）
+                action = RobotAction.MOVE_RIGHT  # 右转（无右侧障碍物且有右转指令）
             else:
                 # 所有规划方向有障碍物时，优先尝试转向避开
                 if not is_left_obstacle:
-                    action = 2  # 左转避开
+                    action = RobotAction.MOVE_LEFT  # 左转避开
                 elif not is_right_obstacle:
-                    action = 3  # 右转避开
+                    action = RobotAction.MOVE_RIGHT  # 右转避开
                 else:
-                    action = 0  # 无法移动，停止
-            
+                    action = RobotAction.STOP  # 无法移动，停止
+
+            print('\n\n' + '#' * 20)
+            print(f"动作: {action}")
+            print('#' * 20 + '\n\n')
+
             # 6. 执行动作
             dog.set_action(
                 action=action,
