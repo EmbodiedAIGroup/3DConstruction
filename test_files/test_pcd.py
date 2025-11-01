@@ -10,7 +10,7 @@ WIDTH = 640
 HEIGHT = 480
 FPS = 30
 # 保存目录
-SAVE_DIR = "realsense_pointclouds"
+SAVE_DIR = "../temp/realsense_pointclouds"
 
 def setup_realsense_pipeline():
     """初始化RealSense管线、配置流并返回所需对象"""
