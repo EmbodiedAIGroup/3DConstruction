@@ -37,7 +37,7 @@ def visualize_ply(file_path):
                                       top=50)
 
 # --- 替换为你的 PLY 文件路径 ---
-your_ply_file = "../temp/realsense_pointclouds/pointcloud_000001.ply"
+your_ply_file = "../save_results/realsense_reconstruction/final_reconstruction.ply"
 
 # 执行函数
 visualize_ply(your_ply_file)
