@@ -5,3 +5,4 @@ save_results/
 *.pcd
 temp.py
 temp/
+*.ply

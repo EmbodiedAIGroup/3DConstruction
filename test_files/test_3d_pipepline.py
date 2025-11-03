@@ -57,9 +57,9 @@ class RealSensePointCloudAccumulator:
         coordinates = []
         colors = []
         for i in range(len(vtx)):
-            x = vtx[i].x
-            y = vtx[i].y
-            z = vtx[i].z
+            x = vtx[i][0]
+            y = vtx[i][1]
+            z = vtx[i][2]
             if z > 0:  # 过滤深度为0的无效点
                 coordinates.append([x, y, z])
                 # 颜色查找（uv坐标转换）
@@ -96,20 +96,39 @@ class RealSensePointCloudAccumulator:
         # 构建文件名
         file_name = f"accumulated_pc_{timestamp}.ply"
         save_path = os.path.join(self.save_dir, file_name)
-        
+
+        print(f'full_pc.shape: {self.full_pc.shape}')
+        print(f'full_pc_colors.shape: {self.full_pc_colors.shape}')
+
+        # 原张量形状：[214089, 3]，第2维为 (x, y, z)
+        # 转换为 (x, z, y)，即取第0、2、1列
+        # # yz 互换
+        # full_pc_reordered = self.full_pc[:, [0, 2, 1]]
+        # full_pc_colors_reordered = self.full_pc_colors[:, [0, 2, 1]]
+        # # 上下颠倒反过来
+        # # 翻转Y轴（将y坐标取相反数），使原本向下的Y轴变为向上
+        # full_pc_flipped = full_pc_reordered.clone()
+        # full_pc_flipped[:, 1] = -full_pc_reordered[:, 1]  # 第1列是y坐标
+
         # 转换为Open3D格式
         pcd = o3d.geometry.PointCloud()
         pcd.points = o3d.utility.Vector3dVector(self.full_pc.cpu().numpy())
         pcd.colors = o3d.utility.Vector3dVector(self.full_pc_colors.cpu().numpy())
-        
-        # 保存文件
+
+        # 保存点云文件
         o3d.io.write_point_cloud(save_path, pcd)
         print(f"\n✅ 成功保存点云至: {save_path} (点数: {len(self.full_pc)})")
-        
-        # 清空全局点云，为下一轮累积做准备
-        self.full_pc = torch.empty((0, 3), device=self.device)
-        self.full_pc_colors = torch.empty((0, 3), device=self.device)
-        print("🚀 已清空全局点云，开始下一轮 2 秒累积。\n")
+
+        # 保存对应的numpy数据（点坐标和颜色）
+        # 生成numpy数据保存路径（在原路径后添加_data后缀）
+        numpy_save_path = save_path.rsplit('.', 1)[0] + "_data.npy"  # 处理带扩展名的路径
+        # 组合点坐标和颜色数据为一个字典保存（方便后续读取）
+        numpy_data = {
+            "points": self.full_pc.cpu().numpy(),
+            "colors": self.full_pc_colors.cpu().numpy()
+        }
+        np.save(numpy_save_path, numpy_data)
+        print(f"✅ 成功保存numpy数据至: {numpy_save_path}")
         
         # O3D 可视化：移除，因为在自动循环中频繁弹出窗口会干扰操作，如果需要请手动调用。
         # o3d.visualization.draw_geometries([pcd], window_name="累积点云结果")
@@ -136,7 +155,7 @@ if __name__ == "__main__":
         last_save_time = time.time()
         
         # 设置采集持续时间（例如：采集 60 秒）
-        COLLECTION_DURATION = 60 # 您可以根据实际需要调整采集时长（秒）
+        COLLECTION_DURATION = 6000000 # 您可以根据实际需要调整采集时长（秒）
         start_time = time.time()
         
         print(f"--- 采集将在 {COLLECTION_DURATION} 秒后自动停止 ---")
@@ -159,6 +178,7 @@ if __name__ == "__main__":
             time.sleep(0.01)
 
     except Exception as e:
+        raise e
         print(f"\n❌ 发生错误: {e}")
         
     finally:
