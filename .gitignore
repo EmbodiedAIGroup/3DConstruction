@@ -6,3 +6,4 @@ save_results/
 temp.py
 temp/
 *.ply
+*.npy

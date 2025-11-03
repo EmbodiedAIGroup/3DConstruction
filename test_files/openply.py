@@ -118,7 +118,7 @@ def visualize_ply(file_path):
 
 # --- 替换为你的 PLY 文件路径 ---
 
-folder = "D:/X_Projects/YProjects/3DConstruction/test_files"  # 替换为实际文件夹路径
+folder = "../test_files"  # 替换为实际文件夹路径
 # 获取最新创建的文件夹路径
 latest_folder = find_latest_created_folder(folder)
 print(f"最新创建的文件夹: {latest_folder}")
