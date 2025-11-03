@@ -16,8 +16,10 @@ class RealSensePointCloudAccumulator:
         self.full_pc_colors = torch.empty((0, 3), device=device)  # 全局点云颜色
         self.device = device
         
-        # 设置保存目录
-        self.save_dir = save_dir
+
+        # 设置保存目录（包含当前时间戳）
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # 格式：年日月_时分秒
+        self.save_dir = f"{save_dir}_{timestamp}" # 拼接时间戳子目录
         os.makedirs(self.save_dir, exist_ok=True)
         
         # RealSense 相机初始化和配置 (与原代码保持一致)
